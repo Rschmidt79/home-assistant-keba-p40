@@ -148,11 +148,6 @@ and protected by registry/setup tests and ruff F821 checks.
 
 Change the manifest version, run tests/ruff/hassfest, commit and push to main,
 then create a matching GitHub release such as v0.2.3. HACS downloads the release
-source tree. A tag alone is not a release. The CI template in `docs/github-actions-checks.yaml` validates tests, HACS and
-hassfest when installed as `.github/workflows/checks.yaml`. It is not active yet
-because the publishing login lacks GitHub workflow scope. No template job
-contacts a real charger.
-
-To activate CI later, add the supplied workflow template through GitHub's web UI
-or a login with workflow scope. HACS installation and release updates do not
-require this workflow.
+source tree. A tag alone is not a release. Active GitHub Actions in `.github/workflows/checks.yaml` run pytest, ruff,
+hassfest and HACS validation. Tests block network sockets and no CI job contacts
+a real charger.

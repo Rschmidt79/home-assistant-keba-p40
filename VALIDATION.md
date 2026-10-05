@@ -26,10 +26,14 @@ but the GitHub repository is published as a HACS custom repository;
 no default-catalog admission is claimed.
 
 The ZIP excludes bytecode, test/lint caches, coverage database and local environment
-files. Source, tests, documented fixtures, license, translations and an inactive CI template are included.
+files. Source, tests, documented fixtures, license, translations and an active CI workflow are included.
 
 Version 0.2.2 includes runtime tests for exact 25-entry registry cleanup, preservation
 of 32 monitor entities/four controls, other config entries/platforms/domains,
 unknown IDs, idempotence, setup success and cleanup failure isolation.
 No serial number, address, certificate fingerprint or credentials from the
 reference device are published.
+
+GitHub Actions runs pytest/coverage, ruff/formatter, official hassfest and HACS
+validation on pushes/PRs/manual dispatch. Only the brand-catalog check is skipped
+for this custom repository; no default HACS catalog inclusion is claimed.

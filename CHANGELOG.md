@@ -8,8 +8,7 @@
   successful registration of all current monitoring entities.
 - Import DOMAIN explicitly; a cleanup failure cannot disable monitoring.
 - Include old config-entry migration for implicit admin and option consolidation.
-- Include a pytest/ruff/hassfest/HACS CI template; it is not activated because
-  the publishing credential lacks workflow scope. No live charger test is run.
+- Include a pytest/ruff/hassfest/HACS CI workflow. No live charger test is run.
 
 Controls remain physically unverified. Session-preserving pause/resume and phase
 switching remain unimplemented. Back up HA and update old entity references before
