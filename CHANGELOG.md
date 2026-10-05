@@ -1,3 +1,9 @@
+# 0.2.3
+
+- Improve installation and feature documentation and repository discoverability.
+- Include a neutral local integration icon and enable all HACS checks.
+- No changes to charger requests, entity IDs or control behavior.
+
 # Changelog
 
 ## 0.2.2

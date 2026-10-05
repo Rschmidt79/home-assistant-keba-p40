@@ -10,7 +10,7 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/Rschmidt79/home-assistant-keba-p40/issues",
   "requirements": [],
-  "version": "0.2.2",
+  "version": "0.2.3",
   "zeroconf": [
     "_rest-P40-keba-wallbox._tcp.local."
   ]

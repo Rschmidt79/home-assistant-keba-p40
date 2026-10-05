@@ -19,7 +19,7 @@ versions are not yet physically verified. This is an independent community
 project, not an official KEBA product.
 
 Domain: `keba_p40`.
-Version 0.2.2. Requires Home Assistant 2026.9 or newer (Python 3.14).
+Version 0.2.3. Requires Home Assistant 2026.9 or newer (Python 3.14).
 
 32 existing monitoring entities retain their unique IDs. Four additional controls
 are registered but **disabled by default**. Setup, discovery and polling never send
