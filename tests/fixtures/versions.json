@@ -1,0 +1,44 @@
+{
+  "configs": [
+    {
+      "key": "package",
+      "value": "1.5.1"
+    },
+    {
+      "key": "arnisolution",
+      "value": "1.5.1"
+    },
+    {
+      "key": "cpm",
+      "value": "5.6.1"
+    },
+    {
+      "key": "osscript",
+      "value": "5.6.1"
+    },
+    {
+      "key": "restapi",
+      "value": "2.5.0"
+    },
+    {
+      "key": "webui",
+      "value": "1.2.0"
+    },
+    {
+      "key": "mgmt",
+      "value": "1.5.0"
+    },
+    {
+      "key": "updatetool",
+      "value": "1.5.0"
+    },
+    {
+      "key": "buildnumber",
+      "value": "e63e16e79c335b4ae139f0baee676f2ab56a3c8b"
+    },
+    {
+      "key": "timestamp",
+      "value": "'2026-08-12 12:14:17 +0300'"
+    }
+  ]
+}

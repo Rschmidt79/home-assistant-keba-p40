@@ -1,0 +1,36 @@
+{
+  "configs": [
+    {
+      "key": "modbus_enable",
+      "value": "true"
+    },
+    {
+      "key": "modbus_port",
+      "value": "502"
+    },
+    {
+      "key": "modbus_unit_id",
+      "value": "255"
+    },
+    {
+      "key": "modbus_rfid_enable",
+      "value": "true"
+    },
+    {
+      "key": "modbus_failsafe_current",
+      "value": "32000"
+    },
+    {
+      "key": "modbus_failsafe_timeout",
+      "value": "30"
+    },
+    {
+      "key": "modbus_swap_word",
+      "value": "false"
+    },
+    {
+      "key": "modbus_swap_byte",
+      "value": "false"
+    }
+  ]
+}

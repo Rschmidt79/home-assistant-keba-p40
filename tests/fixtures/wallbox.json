@@ -1,0 +1,47 @@
+{
+  "number": 1,
+  "serialNumber": "12345678",
+  "samcSerialNumber": "87654321",
+  "x2active": false,
+  "x11active": false,
+  "x12active": false,
+  "permanentlyLocked": false,
+  "model": "KC-P40-16EU0-C6S1AMP0-LS1R11110L0-CLPT",
+  "firmwareVersion": "5.0.1",
+  "firmwareVersionMetering": "3.0.1",
+  "firmwareVersionSafety": "3.1.3",
+  "meter": {
+    "meterValue": 123456700,
+    "totalActivePower": 0,
+    "totalPowerFactor": 0,
+    "phasesSupported": null,
+    "currentOffered": 16000,
+    "temperature": 3110,
+    "lines": [
+      {
+        "socketPhase": "L1",
+        "current": 5,
+        "voltage": 231
+      },
+      {
+        "socketPhase": "L2",
+        "current": 4,
+        "voltage": 233
+      },
+      {
+        "socketPhase": "L3",
+        "current": 5,
+        "voltage": 234
+      }
+    ]
+  },
+  "maxPhases": 3,
+  "maxCurrent": 16000,
+  "phaseUsed": "L1_L2_L3",
+  "ipAddress": "N/A",
+  "state": "READY_FOR_CHARGING",
+  "vehiclePlugged": true,
+  "authorizationEnabled": false,
+  "sessionActive": true,
+  "reserved": false
+}

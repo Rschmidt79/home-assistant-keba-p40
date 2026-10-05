@@ -1,0 +1,152 @@
+{
+  "configs": [
+    {
+      "key": "max_available_current",
+      "value": "100000"
+    },
+    {
+      "key": "nominal_voltage",
+      "value": "230"
+    },
+    {
+      "key": "min_default_current",
+      "value": "6000"
+    },
+    {
+      "key": "max_asymmetrical_phase_current",
+      "value": "0"
+    },
+    {
+      "key": "asymmetrical_network_enable",
+      "value": "false"
+    },
+    {
+      "key": "asymmetrical_network_checker_task_initial_delay",
+      "value": "15"
+    },
+    {
+      "key": "asymmetrical_network_checker_task_retry_interval",
+      "value": "10"
+    },
+    {
+      "key": "failsafe_current_serial_1",
+      "value": "32000"
+    },
+    {
+      "key": "failsafe_current_serial_2",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_3",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_4",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_5",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_6",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_7",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_8",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_9",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_10",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_11",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_12",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_13",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_14",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_15",
+      "value": "0"
+    },
+    {
+      "key": "failsafe_current_serial_16",
+      "value": "0"
+    },
+    {
+      "key": "random_profile_max_delay",
+      "value": "600"
+    },
+    {
+      "key": "random_profile_delay_enable",
+      "value": "false"
+    },
+    {
+      "key": "random_profile_delay_feature_enable",
+      "value": "false"
+    },
+    {
+      "key": "pv_enable",
+      "value": "false"
+    },
+    {
+      "key": "pv_min_share",
+      "value": "0"
+    },
+    {
+      "key": "pv_pre_charge_time",
+      "value": "0"
+    },
+    {
+      "key": "pv_threshold_import",
+      "value": "400000"
+    },
+    {
+      "key": "pv_threshold_export",
+      "value": "400000"
+    },
+    {
+      "key": "pv_delay",
+      "value": "300"
+    },
+    {
+      "key": "fast_charging_enable",
+      "value": "false"
+    },
+    {
+      "key": "fast_charging_button_exists",
+      "value": "false"
+    },
+    {
+      "key": "fast_charging_button_enable",
+      "value": "false"
+    },
+    {
+      "key": "connector_phase_enable",
+      "value": "false"
+    },
+    {
+      "key": "connector_phase_source",
+      "value": "CPM_PROFILES"
+    }
+  ]
+}

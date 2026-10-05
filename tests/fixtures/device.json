@@ -1,0 +1,28 @@
+{
+  "configs": [
+    {
+      "key": "name",
+      "value": "P40_12345678"
+    },
+    {
+      "key": "serialnumber",
+      "value": "12345678"
+    },
+    {
+      "key": "ordernumber",
+      "value": "136158"
+    },
+    {
+      "key": "revision",
+      "value": "03"
+    },
+    {
+      "key": "wallboxmodel",
+      "value": "KC-P40-16EU0-C6S1AMP0-LS1R11110L0-CLPT"
+    },
+    {
+      "key": "samcserial",
+      "value": "87654321"
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "title": "KEBA KeContact P40",
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Connect KEBA P40",
+        "description": "Local REST monitoring with optional controls. Controls are disabled by default until explicitly enabled. The factory certificate may require its SHA-256 fingerprint or disabled CA validation.",
+        "data": {
+          "host": "Hostname or IP",
+          "port": "HTTPS port",
+          "username": "KEBA username",
+          "password": "KEBA password",
+          "verify_ssl": "Validate certificate with HA trust store",
+          "certificate_sha256": "Optional SHA-256 certificate fingerprint"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate KEBA P40",
+        "description": "Local REST monitoring with optional controls. Controls are disabled by default until explicitly enabled. The factory certificate may require its SHA-256 fingerprint or disabled CA validation.",
+        "data": {
+          "host": "Hostname or IP",
+          "port": "HTTPS port",
+          "username": "KEBA username",
+          "password": "KEBA password",
+          "verify_ssl": "Validate certificate with HA trust store",
+          "certificate_sha256": "Optional SHA-256 certificate fingerprint"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure connection",
+        "description": "Local REST monitoring with optional controls. Controls are disabled by default until explicitly enabled. The factory certificate may require its SHA-256 fingerprint or disabled CA validation.",
+        "data": {
+          "host": "Hostname or IP",
+          "port": "HTTPS port",
+          "username": "KEBA username",
+          "password": "KEBA password",
+          "verify_ssl": "Validate certificate with HA trust store",
+          "certificate_sha256": "Optional SHA-256 certificate fingerprint"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Authentication rejected. Check your KEBA credentials.",
+      "cannot_connect": "Cannot connect to the P40. Check network, HTTPS port and certificate settings.",
+      "wrong_device": "The serial number does not match the configured or discovered device.",
+      "invalid_response": "P40 returned an invalid or unexpected API response.",
+      "invalid_host_or_fingerprint": "Enter a hostname/IP without a URL and a valid optional SHA-256 fingerprint."
+    },
+    "abort": {
+      "already_configured": "This P40 serial number is already configured.",
+      "invalid_discovery": "Discovery did not provide a valid serial number.",
+      "reauth_successful": "Authentication updated.",
+      "reconfigure_successful": "Connection updated."
+    }
+  },
+  "entity": {
+    "number": {
+      "charging_current_limit": {
+        "name": "Ladestrømsgrænse"
+      }
+    },
+    "button": {
+      "start_charging": {
+        "name": "Start opladning"
+      },
+      "stop_charging": {
+        "name": "Stop opladning"
+      }
+    },
+    "switch": {
+      "charging_availability": {
+        "name": "Opladning tilgængelig"
+      }
+    },
+    "sensor": {
+      "charging_state": {
+        "name": "Ladetilstand"
+      },
+      "session_status": {
+        "name": "Sessionsstatus"
+      },
+      "active_power": {
+        "name": "Aktiv effekt"
+      },
+      "current_l1": {
+        "name": "Strøm L1"
+      },
+      "current_l2": {
+        "name": "Strøm L2"
+      },
+      "current_l3": {
+        "name": "Strøm L3"
+      },
+      "voltage_l1": {
+        "name": "Spænding L1"
+      },
+      "voltage_l2": {
+        "name": "Spænding L2"
+      },
+      "voltage_l3": {
+        "name": "Spænding L3"
+      },
+      "current_offered": {
+        "name": "Tilbudt strøm (PWM)"
+      },
+      "maximum_current": {
+        "name": "Maksimumstrøm"
+      },
+      "total_energy": {
+        "name": "Samlet energi"
+      },
+      "session_energy": {
+        "name": "Sessionsenergi"
+      },
+      "temperature": {
+        "name": "Temperatur"
+      },
+      "power_factor": {
+        "name": "Effektfaktor"
+      },
+      "session_start": {
+        "name": "Sessionstart"
+      },
+      "session_end": {
+        "name": "Sessionslut"
+      },
+      "session_duration": {
+        "name": "Sessionsvarighed"
+      },
+      "model": {
+        "name": "Model"
+      },
+      "serial": {
+        "name": "Serienummer"
+      },
+      "package_version": {
+        "name": "Pakkeversion"
+      },
+      "baseio_firmware": {
+        "name": "Baseio firmware"
+      },
+      "meter_firmware": {
+        "name": "Meter firmware"
+      },
+      "safety_firmware": {
+        "name": "Safety firmware"
+      },
+      "api_version": {
+        "name": "Api version"
+      },
+      "rest_alias": {
+        "name": "REST-alias"
+      },
+      "failsafe_current": {
+        "name": "Failsafe-strøm"
+      },
+      "failsafe_timeout": {
+        "name": "Failsafe-timeout"
+      }
+    },
+    "binary_sensor": {
+      "vehicle_plugged": {
+        "name": "Bil tilsluttet"
+      },
+      "charging": {
+        "name": "Oplader"
+      },
+      "session_active": {
+        "name": "Session aktiv"
+      },
+      "error": {
+        "name": "Fejl"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "configs": [
+    {
+      "key": "restapi_alias",
+      "value": "P40_12345678"
+    }
+  ]
+}

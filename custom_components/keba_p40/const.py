@@ -1,0 +1,26 @@
+"""Constants for the read-only KEBA P40 integration."""
+
+DOMAIN = "keba_p40"
+DEFAULT_PORT = 8443
+CONF_FINGERPRINT = "certificate_sha256"
+LIVE_INTERVAL = 5
+SESSION_INTERVAL = 20
+CONFIG_INTERVAL = 120
+STATIC_INTERVAL = 21600
+STATES = frozenset(
+    {
+        "CHARGING",
+        "IDLE",
+        "READY_FOR_CHARGING",
+        "RECOVER_FROM_ERROR",
+        "INSTALLER_MODE",
+        "SUSPENDED",
+        "TOKEN_PROGRAMMING_MODE",
+        "UNRECOVERABLE_ERROR",
+        "UNAVAILABLE",
+        "OFFLINE",
+        "DEGRADED",
+    }
+)
+ERROR_STATES = frozenset({"RECOVER_FROM_ERROR", "UNRECOVERABLE_ERROR", "DEGRADED"})
+SESSION_STATES = frozenset({"INITIATED", "PWM_CHARGING", "BLOCKED", "CLOSED"})
