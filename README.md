@@ -1,6 +1,24 @@
 # KEBA KeContact P40 for Home Assistant
 
-Local REST integration, domain `keba_p40`. Repository name: `home-assistant-keba-p40`.
+A local Home Assistant integration for KEBA KeContact P40 wallboxes, using the
+charger's HTTPS REST API. No cloud connection or Modbus polling is required.
+
+[![Validation](https://github.com/Rschmidt79/home-assistant-keba-p40/actions/workflows/checks.yaml/badge.svg)](https://github.com/Rschmidt79/home-assistant-keba-p40/actions/workflows/checks.yaml)
+[![Release](https://img.shields.io/github/v/release/Rschmidt79/home-assistant-keba-p40)](https://github.com/Rschmidt79/home-assistant-keba-p40/releases)
+
+## What you get
+
+- 32 monitoring entities: charging and connection status, phase currents and
+  voltages, power, lifetime/session energy, session timing and diagnostics.
+- Local discovery, manual setup, automatic JWT renewal and certificate pinning.
+- Charging status kept separate from an open session; exact session energy.
+- Four optional controls, disabled by default and not yet physically tested.
+
+**Tested hardware:** one P40 with REST API 2.5.0. P40 Pro and other firmware
+versions are not yet physically verified. This is an independent community
+project, not an official KEBA product.
+
+Domain: `keba_p40`.
 Version 0.2.2. Requires Home Assistant 2026.9 or newer (Python 3.14).
 
 32 existing monitoring entities retain their unique IDs. Four additional controls
@@ -16,6 +34,14 @@ energy values, session IDs, dates and durations. The private raw audit is not in
 device, **but have not been physically executed**. This release is ready to install
 for monitoring and staged control validation; it is not a claim of field-tested
 production controls.
+
+## Relationship to Home Assistant Core
+
+[Core PR #173179](https://github.com/home-assistant/core/pull/173179) proposes a
+built-in P40 integration. This repository is a separate implementation with its
+own physical audit and tests; it is not a testing distribution of that PR.
+Both use the domain `keba_p40`. Do not install both implementations together.
+A future transition will require checking config-entry and entity compatibility.
 
 ## Install from ZIP
 
