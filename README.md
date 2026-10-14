@@ -35,6 +35,26 @@ device, **but have not been physically executed**. This release is ready to inst
 for monitoring and staged control validation; it is not a claim of field-tested
 production controls.
 
+## Field observation: 2026-10-14
+
+Read-only monitoring remained available on the reference P40, with changing phase
+voltage measurements received in Home Assistant during consecutive observations.
+The reported package version was still `1.5.1+cert-meter` and REST API version
+`2.5.0`. This observation verifies current monitoring connectivity; it does not
+validate charging controls or the charger's behavior when a vehicle is plugged in.
+
+The owner reported receiving replacement user and installer passwords, a recovery
+key and a PIN from KEBA. Whether these had been activated on the charger was not
+verified, and neither replacement login nor recovery was attempted. Continued
+monitoring does not establish whether existing credentials will remain valid after
+activation or token renewal. No passwords, recovery keys or PINs are published.
+
+Guest charging without a Home Assistant plan has not been physically verified.
+This integration does not implement a plan requirement or automatically block
+charging on plug-in. Such a policy depends on the charger's own authorization/start
+settings and any separately configured Home Assistant automation. A working
+monitoring connection alone does not verify that policy.
+
 ## Relationship to Home Assistant Core
 
 [Core PR #173179](https://github.com/home-assistant/core/pull/173179) proposes a
