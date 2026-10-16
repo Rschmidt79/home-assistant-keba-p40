@@ -41,7 +41,7 @@ async def test_cleanup_exact_25_and_preserves_other_records(hass):
     registry = er.async_get(hass)
     new = create_current(registry, entry)
     old = create_legacy(registry, entry)
-    assert len(new) == 32 and len(old) == 25
+    assert len(new) == 33 and len(old) == 25
     controls = [
         registry.async_get_or_create(domain, "keba_p40", f"{SERIAL}_{key}", config_entry=entry)
         for domain, key in [
@@ -88,7 +88,7 @@ async def test_invalid_identity_never_cleans(hass, serial):
     assert _async_remove_legacy_entities(hass, entry) == 0
 
 
-async def test_actual_setup_cleans_legacy_and_keeps_36(hass, mock_api):
+async def test_actual_setup_cleans_legacy_and_keeps_37(hass, mock_api):
     entry = MockConfigEntry(domain="keba_p40", unique_id=SERIAL, data=DATA)
     entry.add_to_hass(hass)
     registry = er.async_get(hass)
@@ -98,8 +98,8 @@ async def test_actual_setup_cleans_legacy_and_keeps_36(hass, mock_api):
         await hass.async_block_till_done()
         assert all(registry.async_get(e.entity_id) is None for e in old)
         entries = er.async_entries_for_config_entry(registry, entry.entry_id)
-        assert len(entries) == 36
-        assert len([e for e in entries if e.disabled_by is None]) == 32
+        assert len(entries) == 37
+        assert len([e for e in entries if e.disabled_by is None]) == 33
         mock_api.control.assert_not_called()
         assert await hass.config_entries.async_unload(entry.entry_id)
 

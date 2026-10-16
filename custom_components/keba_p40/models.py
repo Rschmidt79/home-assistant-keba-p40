@@ -128,6 +128,7 @@ def parse_sessions(body: Any, serial: str) -> dict[str, Any]:
     start = timestamp_ms(selected.get("startDate"))
     return {
         "session_id": selected["id"],
+        "session_token_id": session_token_id(selected.get("tokenId")),
         "session_status": selected["status"],
         "session_start": start,
         "session_end": timestamp_ms(selected.get("endDate")),
@@ -136,3 +137,16 @@ def parse_sessions(body: Any, serial: str) -> dict[str, Any]:
         # A known reset timestamp is required for correct TOTAL statistics.
         "session_energy": number(selected.get("energyConsumed"), 1_000_000) if start else None,
     }
+
+
+def session_token_id(value: Any) -> str | None:
+    """Preserve opaque Token.id; reject missing/invalid HA state values."""
+    if (
+        not isinstance(value, str)
+        or not value.strip()
+        or len(value) > 255
+        or value.casefold() in {"unknown", "unavailable"}
+        or any(ord(char) < 32 or ord(char) == 127 for char in value)
+    ):
+        return None
+    return value

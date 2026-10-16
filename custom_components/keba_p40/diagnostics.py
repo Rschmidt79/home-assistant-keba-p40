@@ -8,7 +8,14 @@ from homeassistant.core import HomeAssistant
 from . import P40ConfigEntry
 from .const import CONFIG_INTERVAL, LIVE_INTERVAL, SESSION_INTERVAL, STATIC_INTERVAL
 
-TO_REDACT = {"serial", "rest_alias", "session_id", "session_start", "session_end"}
+TO_REDACT = {
+    "serial",
+    "rest_alias",
+    "session_id",
+    "session_token_id",
+    "session_start",
+    "session_end",
+}
 
 
 async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: P40ConfigEntry) -> dict:

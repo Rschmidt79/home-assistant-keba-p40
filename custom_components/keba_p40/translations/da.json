@@ -157,6 +157,9 @@
       },
       "failsafe_timeout": {
         "name": "Failsafe-timeout"
+      },
+      "session_token_id": {
+        "name": "Sessionens chip-ID"
       }
     },
     "binary_sensor": {

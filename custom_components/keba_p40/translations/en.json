@@ -157,6 +157,9 @@
       },
       "failsafe_timeout": {
         "name": "Failsafe timeout"
+      },
+      "session_token_id": {
+        "name": "Session token ID"
       }
     },
     "binary_sensor": {

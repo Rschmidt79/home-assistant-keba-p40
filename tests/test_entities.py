@@ -23,7 +23,7 @@ async def test_entities_reset_identity_availability_and_diagnostics(hass, mock_a
     entry.runtime_data = co
     sensors = {d.key: P40Sensor(co, d) for d in SENSORS}
     binaries = {d.key: P40BinarySensor(co, d) for d in BINARY_SENSORS}
-    assert len(sensors) == 28
+    assert len(sensors) == 29
     assert len(binaries) == 4
     assert sensors["total_energy"].native_value == 123.4567
     assert sensors["total_energy"].state_class == SensorStateClass.TOTAL_INCREASING
@@ -59,3 +59,43 @@ async def test_entities_reset_identity_availability_and_diagnostics(hass, mock_a
     assert "example-user" not in serialized and "example-password" not in serialized
     assert "12345678" not in serialized and "P40_12345678" not in serialized
     assert "_access_token" not in serialized and "Authorization" not in serialized
+
+
+async def test_session_token_scope_transition_and_redaction(hass, mock_api):
+    entry = MockConfigEntry(domain="keba_p40", unique_id="12345678", data={})
+    entry.add_to_hass(hass)
+    co = P40Coordinator(hass, entry, mock_api)
+    data = await co._async_update_data()
+    co.async_set_updated_data(
+        replace(data, session={**data.session, "session_token_id": "00AaSYNTHETIC"})
+    )
+    entry.runtime_data = co
+    description = next(d for d in SENSORS if d.key == "session_token_id")
+    sensor = P40Sensor(co, description)
+    assert sensor.unique_id == "12345678_session_token_id"
+    assert sensor.native_value == "00AaSYNTHETIC"
+    assert sensor.available
+    assert sensor.extra_state_attributes["active_session"] is True
+    diag = await async_get_config_entry_diagnostics(hass, entry)
+    assert "00AaSYNTHETIC" not in json.dumps(diag, default=str)
+    co.async_set_updated_data(
+        replace(
+            co.data,
+            session={
+                **co.data.session,
+                "session_status": "CLOSED",
+                "session_end": datetime(2026, 1, 5, 12, tzinfo=UTC),
+            },
+        )
+    )
+    assert sensor.native_value == "00AaSYNTHETIC"
+    assert sensor.extra_state_attributes["active_session"] is False
+    co.async_set_updated_data(
+        replace(co.data, session={"session_id": 2000, "session_token_id": None})
+    )
+    assert not sensor.available
+    assert sensor.native_value is None
+    assert sensor.extra_state_attributes["session_id"] == 2000
+    co.async_set_update_error(RuntimeError("synthetic API failure"))
+    assert sensor.extra_state_attributes["active_session"] is False
+    assert not sensor.available

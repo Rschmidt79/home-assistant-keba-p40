@@ -18,6 +18,7 @@ fields except the new baseline-profile control, which is documentation-only.
 | Session active / session_active | binary_sensor | W.sessionActive | Open session, may be blocked |
 | Error / error | binary_sensor, problem | W.state in RECOVER_FROM_ERROR/UNRECOVERABLE_ERROR/DEGRADED | Error-state indicator, not raw error code |
 | Charging state / charging_state | sensor | W.state | Known KEBA enum, unknown enum unavailable |
+| Session token ID / session_token_id | sensor | S.tokenId | Opaque authorizing tag ID; session scope/status attributes; unavailable if absent |
 | Session status / session_status | sensor | S.status | INITIATED/PWM_CHARGING/BLOCKED/CLOSED |
 | Active power / active_power | sensor, W, measurement | W.meter.totalActivePower / 1000 | Measured mW→W |
 | Current L1 / current_l1 | sensor, A, measurement | W.meter.lines[L1].current / 1000 | Actual current |

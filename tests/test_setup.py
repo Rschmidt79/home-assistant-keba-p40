@@ -25,8 +25,8 @@ async def test_actual_ha_setup_entities_failure_recovery_unload(hass, mock_api):
         await hass.async_block_till_done()
         registry = er.async_get(hass)
         entities = er.async_entries_for_config_entry(registry, entry.entry_id)
-        assert len(entities) == 36
-        assert len([entity for entity in entities if entity.disabled_by is None]) == 32
+        assert len(entities) == 37
+        assert len([entity for entity in entities if entity.disabled_by is None]) == 33
         assert {entity.domain for entity in entities} == {
             "sensor",
             "binary_sensor",

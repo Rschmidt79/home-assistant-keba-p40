@@ -354,6 +354,6 @@ async def test_actual_entry_reload_keeps_identity_and_never_controls(hass, mock_
             e.unique_id: e.entity_id
             for e in er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id)
         }
-        assert before == after and len(after) == 36
+        assert before == after and len(after) == 37
         mock_api.control.assert_not_called()
         assert await hass.config_entries.async_unload(entry.entry_id)

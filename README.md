@@ -8,7 +8,7 @@ charger's HTTPS REST API. No cloud connection or Modbus polling is required.
 
 ## What you get
 
-- 32 monitoring entities: charging and connection status, phase currents and
+- 33 monitoring entities: charging and connection status, phase currents and
   voltages, power, lifetime/session energy, session timing and diagnostics.
 - Local discovery, manual setup, automatic JWT renewal and certificate pinning.
 - Charging status kept separate from an open session; exact session energy.
@@ -78,7 +78,7 @@ A future transition will require checking config-entry and entity compatibility.
    validation without a fingerprint provides encryption without server identity
    verification. No certificate is guessed or bundled into this package.
 6. Confirm the model, serial, energy, state, phase measurements and versions before
-   enabling any controls. All 32 monitoring entities are enabled by default.
+   enabling any controls. All 33 monitoring entities are enabled by default.
 7. To test a control, open its entity settings and enable that specific entity.
    Follow `PHYSICAL_TEST_PLAN.md`. No controls are automatically called on enable.
 
@@ -100,7 +100,7 @@ updates. This is a custom repository, not an entry in the default HACS catalog.
 
 ## Entities and semantics
 
-See `ENTITIES.md` for all 36 entities and `CONTROLS.md` for request contracts.
+See `ENTITIES.md` for all 37 entities and `CONTROLS.md` for request contracts.
 `sessionActive` means an open session, not charging. Charging is `state=CHARGING`.
 The observed reference had an open BLOCKED session, READY_FOR_CHARGING and 0 W.
 Actual currents and offered PWM current are separate. Total energy is a lifetime
@@ -110,6 +110,31 @@ it is never total_increasing across sessions. `energyConsumedInKwh` is not used.
 Times and duration use milliseconds; session duration includes waiting.
 Missing data and API failures produce unavailable entities, never synthetic zero.
 Serial is stable identity; alias is metadata. No vehicle identity inference exists.
+
+## RFID / session token ID
+
+The **Session token ID** sensor exposes `tokenId` from the selected session. The
+KEBA REST schema defines this as the `Token.id` that authorized that session. It
+is an opaque identifier: case and leading zeros are preserved. No separate token
+list request, authorization change or charging command is made.
+
+Attributes include `session_id`, `session_start`, `session_end`, `session_status`
+and `active_session`. After closure the latest session's ID can remain visible
+with `active_session: false`; it is historical, not a fresh chip swipe. Missing or
+invalid IDs become unavailable and never inherit the previous session's chip.
+The sensor follows existing session polling (20 seconds or plug/session changes),
+so it is not an instantaneous reader event and does not report every swipe.
+
+Automations may map an assigned chip to an explicit vehicle selection, but the
+chip identifies the assigned tag, not the connected vehicle or its battery SOC.
+Use a fresh active session and its session identity when binding a selection;
+never use a historical tag as proof for a new connection. This integration does
+not add vehicle mappings, bypass charging plans, or synthesize battery data.
+
+Chip IDs are available locally in HA states/history but redacted from integration
+diagnostics. Do not publish real IDs in issues or test fixtures. Session chip
+values are schema-supported; representation on each firmware requires live
+verification.
 
 ## Polling and authentication
 
@@ -178,7 +203,7 @@ rather than a KeyError. No physical control request is part of migration.
 
 ## 0.2.2: legacy registry cleanup
 
-After successful setup and registration of all 32 monitoring entities, this
+After successful setup and registration of all 33 monitoring entities, this
 release removes only the 25 known legacy entities from the old implementation,
 matched by exact old unique ID, platform, entity domain and config entry.
 Current unique IDs/HA entity IDs remain unchanged. Other devices, config entries

@@ -119,3 +119,29 @@ def test_malformed_enum_and_negative_celsius_are_handled():
         )
         == {}
     )
+
+
+@pytest.mark.parametrize("token", ["00Ab12", "00000000", "A-token-id"])
+def test_session_token_is_opaque(payloads, token):
+    payloads["sessions"]["sessions"][0]["tokenId"] = token
+    assert parse_sessions(payloads["sessions"], "12345678")["session_token_id"] == token
+
+
+@pytest.mark.parametrize(
+    "token",
+    [None, "", "  ", True, 123, {}, [], "x" * 256, "ab\ncd", "ab\x7f", "unknown", "unavailable"],
+)
+def test_invalid_session_token_unavailable(payloads, token):
+    payloads["sessions"]["sessions"][0]["tokenId"] = token
+    assert parse_sessions(payloads["sessions"], "12345678")["session_token_id"] is None
+
+
+def test_session_token_never_falls_back_to_previous_session(payloads):
+    records = payloads["sessions"]["sessions"]
+    records[0].pop("tokenId", None)
+    records[1]["tokenId"] = "OLD-SYNTHETIC-TAG"
+    assert parse_sessions(payloads["sessions"], "12345678")["session_token_id"] is None
+    records[0]["tokenId"] = "NEW-SYNTHETIC-TAG"
+    assert (
+        parse_sessions(payloads["sessions"], "12345678")["session_token_id"] == "NEW-SYNTHETIC-TAG"
+    )

@@ -43,6 +43,9 @@ def measurement(key, name, device_class, unit, *, category=None):
 SENSORS = (
     SensorEntityDescription(key="charging_state", name="Charging state"),
     SensorEntityDescription(key="session_status", name="Session status"),
+    SensorEntityDescription(
+        key="session_token_id", name="Session token ID", icon="mdi:card-account-details-outline"
+    ),
     measurement("active_power", "Active power", SensorDeviceClass.POWER, UnitOfPower.WATT),
     *(
         measurement(
@@ -152,6 +155,26 @@ class P40Sensor(P40Entity, SensorEntity):
     @property
     def native_value(self):
         return self.value()
+
+    @property
+    def extra_state_attributes(self):
+        if self._key != "session_token_id":
+            return None
+        data = self.coordinator.data
+        session = data.session
+        return {
+            "session_id": session.get("session_id"),
+            "session_start": session.get("session_start"),
+            "session_end": session.get("session_end"),
+            "session_status": session.get("session_status"),
+            "active_session": (
+                self.coordinator.last_update_success
+                and data.live.get("session_active") is True
+                and session.get("session_status") in {"INITIATED", "PWM_CHARGING", "BLOCKED"}
+                and session.get("session_start") is not None
+                and session.get("session_end") is None
+            ),
+        }
 
     @property
     def last_reset(self) -> datetime | None:
