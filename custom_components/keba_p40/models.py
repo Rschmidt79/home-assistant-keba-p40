@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -129,6 +130,7 @@ def parse_sessions(body: Any, serial: str) -> dict[str, Any]:
     return {
         "session_id": selected["id"],
         "session_token_id": session_token_id(selected.get("tokenId")),
+        "session_end_absent": selected.get("endDate") is None,
         "session_status": selected["status"],
         "session_start": start,
         "session_end": timestamp_ms(selected.get("endDate")),
@@ -146,7 +148,7 @@ def session_token_id(value: Any) -> str | None:
         or not value.strip()
         or len(value) > 255
         or value.casefold() in {"unknown", "unavailable"}
-        or any(ord(char) < 32 or ord(char) == 127 for char in value)
+        or any(unicodedata.category(char) == "Cc" for char in value)
     ):
         return None
     return value

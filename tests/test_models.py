@@ -145,3 +145,10 @@ def test_session_token_never_falls_back_to_previous_session(payloads):
     assert (
         parse_sessions(payloads["sessions"], "12345678")["session_token_id"] == "NEW-SYNTHETIC-TAG"
     )
+
+
+def test_malformed_session_end_is_not_an_open_session(payloads):
+    payloads["sessions"]["sessions"][0]["endDate"] = "bad-date"
+    session = parse_sessions(payloads["sessions"], "12345678")
+    assert session["session_end"] is None
+    assert session["session_end_absent"] is False

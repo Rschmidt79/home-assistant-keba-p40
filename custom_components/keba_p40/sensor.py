@@ -173,6 +173,7 @@ class P40Sensor(P40Entity, SensorEntity):
                 and session.get("session_status") in {"INITIATED", "PWM_CHARGING", "BLOCKED"}
                 and session.get("session_start") is not None
                 and session.get("session_end") is None
+                and session.get("session_end_absent") is True
             ),
         }
 
