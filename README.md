@@ -19,7 +19,7 @@ versions are not yet physically verified. This is an independent community
 project, not an official KEBA product.
 
 Domain: `keba_p40`.
-Version 0.2.3. Requires Home Assistant 2026.9 or newer (Python 3.14).
+Version 0.2.4. Requires Home Assistant 2026.9 or newer (Python 3.14).
 
 32 existing monitoring entities retain their unique IDs. Four additional controls
 are registered but **disabled by default**. Setup, discovery and polling never send
@@ -218,7 +218,7 @@ and protected by registry/setup tests and ruff F821 checks.
 ## Publishing updates
 
 Change the manifest version, run tests/ruff/hassfest, commit and push to main,
-then create a matching GitHub release such as v0.2.3. HACS downloads the release
+then create a matching GitHub release such as v0.2.4. HACS downloads the release
 source tree. A tag alone is not a release. Active GitHub Actions in `.github/workflows/checks.yaml` run pytest, ruff,
 hassfest and HACS validation. Tests block network sockets and no CI job contacts
 a real charger.

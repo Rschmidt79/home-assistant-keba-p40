@@ -1,8 +1,9 @@
-# Unreleased
+# 0.2.4
 
 - Add a read-only session token ID sensor for RFID-based automation, with session
   identity and active/historical attributes. Preserve chip ID case and leading zeros.
 - Reject invalid/missing chip values and redact chip IDs from diagnostics.
+- Treat malformed session closure data as inactive for chip bindings.
 - No automatic vehicle mapping, charger authorization or control changes.
 
 # 0.2.3

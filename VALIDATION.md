@@ -1,3 +1,18 @@
+# Validation — 2026-10-17 (0.2.4)
+
+- Python 3.14.8; Home Assistant test dependency 2026.9.4.
+- pytest: **116 passed**, with network sockets disabled.
+- Statement coverage: **98.80%** (657/665).
+- ruff check and ruff format --check: passed.
+- RFID tests cover opaque IDs, invalid/missing values, no fallback to a previous
+  session, active/historical scope, malformed closure data, API failure and
+  diagnostics redaction. Public tests use synthetic chip IDs.
+- Read-only observation on HA 2026.10.1 confirmed the session token sensor is
+  loaded and exposes a historical session (`active_session: false`). This is
+  not a fresh-swipe test or a physical charging-control test.
+- GitHub Actions also runs official hassfest and HACS validation on the release
+  commit. No charger controls or authorization settings are changed.
+
 # Validation — 2026-10-05
 
 - Home Assistant **2026.9.4**, Python **3.14.8**, macOS.
@@ -35,5 +50,4 @@ No serial number, address, certificate fingerprint or credentials from the
 reference device are published.
 
 GitHub Actions runs pytest/coverage, ruff/formatter, official hassfest and HACS
-validation on pushes/PRs/manual dispatch. Only the brand-catalog check is skipped
-for this custom repository; no default HACS catalog inclusion is claimed.
+validation on pushes/PRs/manual dispatch. All HACS checks are enabled; no default HACS catalog inclusion is claimed.
