@@ -1,14 +1,13 @@
 """Upgrade/reload contract for existing public and patched 0.2.4 installations."""
 
+import json
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
-
-from custom_components.keba_p40.binary_sensor import BINARY_SENSORS
-from custom_components.keba_p40.sensor import SENSORS
 
 from .test_setup import DATA
 
@@ -30,21 +29,22 @@ async def test_existing_install_retains_identity_settings_and_controls(hass, moc
     )
     dr.async_get(hass).async_update_device(device.id, name_by_user="Existing driveway charger")
     records = []
-    for domain, descriptions in (("sensor", SENSORS), ("binary_sensor", BINARY_SENSORS)):
-        for description in descriptions:
-            if description.key == "control_result" and not patched:
-                continue
+    baseline = json.loads(
+        (Path(__file__).parent / "fixtures/upgrade_0_2_4_entities.json").read_text()
+    )
+    if patched:
+        baseline["sensor"].append("control_result")
+    for domain, keys in baseline.items():
+        for key in keys:
             records.append(
                 registry.async_get_or_create(
                     domain,
                     "keba_p40",
-                    f"12345678_{description.key}",
+                    f"12345678_{key}",
                     config_entry=entry,
                     device_id=device.id,
-                    suggested_object_id=f"existing_driveway_{description.key}",
-                    disabled_by=er.RegistryEntryDisabler.USER
-                    if description.key == "temperature"
-                    else None,
+                    suggested_object_id=f"existing_driveway_{key}",
+                    disabled_by=er.RegistryEntryDisabler.USER if key == "temperature" else None,
                 )
             )
     for domain, key in (
