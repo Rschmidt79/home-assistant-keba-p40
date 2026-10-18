@@ -12,28 +12,69 @@ charger's HTTPS REST API. No cloud connection or Modbus polling is required.
   voltages, power, lifetime/session energy, session timing and diagnostics.
 - Local discovery, manual setup, automatic JWT renewal and certificate pinning.
 - Charging status kept separate from an open session; exact session energy.
-- Four optional controls, disabled by default and not yet physically tested.
+- Four optional controls, disabled by default; candidate validation is described below.
 
 **Tested hardware:** one P40 with REST API 2.5.0. P40 Pro and other firmware
 versions are not yet physically verified. This is an independent community
 project, not an official KEBA product.
 
 Domain: `keba_p40`.
-Version 0.2.4. Requires Home Assistant 2026.9 or newer (Python 3.14).
+Version 0.2.5. Requires Home Assistant 2026.9 or newer (Python 3.14).
 
-32 existing monitoring entities retain their unique IDs. Four additional controls
+33 existing monitoring entities retain their unique IDs. This release adds
+a control-result diagnostic sensor. Four additional controls
 are registered but **disabled by default**. Setup, discovery and polling never send
 controls. No Modbus polling or writes are used.
+
+## Stability fixes in 0.2.5
+
+This release includes the production control receipts and passive meter
+continuity instrumentation, alongside fixes for past `validFrom` dates, null
+`numberOfPhases`, and the Home Assistant `NumberEntity.value` naming collision.
+Per-action START/STOP receipts survive subsequent current-limit commands. An
+ambiguous control is recorded and followed by physical reads; the API never replays
+an uncertain command. Equal meter readings still publish fresh observation bounds.
+Wallbox START/STOP/availability commands use separate fresh TLS connections;
+profile writes and read-only traffic keep the existing shared connection pool.
+
+The reference installation completed overnight charging to its 80% target on
+2026-10-18, with 31.1068 kWh delivered, automatic closure and no controller fault.
+Earlier current-limit and automatic-stop trials exercised the production code.
+A bounded extra STOP/START sequence in the separate charging controller remains
+documented; this is not a claim that every vehicle, outage or firmware is validated.
+The original disconnected-control root cause is not proven.
+
+Regression tests cover Home Assistant entities/registry, supported profile shapes,
+control receipts, passive meter continuity, current-feedback races and real loopback
+TLS. Tests use synthetic credentials and never contact a physical charger.
+
+### Updating an existing installation
+
+1. Make a Home Assistant backup. Update while charging and the charging session are
+   both off, with no imminent scheduled charging window.
+2. Download 0.2.5 in HACS, retaining the existing KEBA integration/config entry.
+3. Fully restart Home Assistant; an integration reload alone is insufficient for
+   reliably replacing Python modules already imported by other integrations.
+4. Check that the current limit is numeric, existing entity IDs and enabled controls
+   are retained, and any separate charging controller has no fault. Do not issue a
+   START merely to verify installation.
+
+HACS replaces `custom_components/keba_p40`. This release includes the stability
+patches used by the reference installation, so updating that patched 0.2.4 install
+retains those fixes. Local EV Smart Charging code, helpers, scripts, templates and
+dashboards are separate; this package neither installs nor updates them. No climate
+feature is included. Restart discards in-memory receipts/observation history; a
+separate controller must reconcile physical state and require fresh evidence.
+For rollback, restore the complete pre-update backup and restart while idle.
+Public 0.2.4 lacks these fixes and is not an equivalent rollback for a patched install.
 
 ## Verification status
 
 Monitoring reference: one physical KEBA P40 (device identifiers withheld), package
 `1.5.1+cert-meter`, REST API `2.5.0`, BaseIO `5.0.1`, meter `3.0.1`, safety `3.1.3`.
 Authenticated read-only audit: 2026-10-05. Public fixtures use the audited response structure with synthetic identifiers,
-energy values, session IDs, dates and durations. The private raw audit is not included. Controls are implemented against the KEBA OpenAPI served by this
-device, **but have not been physically executed**. This release is ready to install
-for monitoring and staged control validation; it is not a claim of field-tested
-production controls.
+energy values, session IDs, dates and durations. The private raw audit is not included. The original 0.2.4 release had no physical control validation. The newer
+stability observations above describe the controls tested since then.
 
 ## Field observation: 2026-10-14
 
@@ -218,7 +259,7 @@ and protected by registry/setup tests and ruff F821 checks.
 ## Publishing updates
 
 Change the manifest version, run tests/ruff/hassfest, commit and push to main,
-then create a matching GitHub release such as v0.2.4. HACS downloads the release
+then create a matching GitHub release such as v0.2.5. HACS downloads the release
 source tree. A tag alone is not a release. Active GitHub Actions in `.github/workflows/checks.yaml` run pytest, ruff,
 hassfest and HACS validation. Tests block network sockets and no CI job contacts
 a real charger.

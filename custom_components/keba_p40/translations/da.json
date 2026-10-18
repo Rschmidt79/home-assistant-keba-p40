@@ -160,6 +160,9 @@
       },
       "session_token_id": {
         "name": "Sessionens chip-ID"
+      },
+      "control_result": {
+        "name": "Kommandokvittering"
       }
     },
     "binary_sensor": {

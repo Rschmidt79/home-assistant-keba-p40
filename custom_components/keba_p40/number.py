@@ -35,7 +35,7 @@ class P40CurrentLimit(P40Entity, NumberEntity):
 
     @property
     def native_value(self):
-        return self.value()
+        return self.data_value()
 
     async def async_set_native_value(self, value):
         await self.coordinator.async_control("current", value)

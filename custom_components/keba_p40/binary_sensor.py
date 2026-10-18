@@ -48,4 +48,4 @@ class P40BinarySensor(P40Entity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        return self.value()
+        return self.data_value()

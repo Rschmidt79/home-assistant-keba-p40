@@ -160,6 +160,9 @@
       },
       "session_token_id": {
         "name": "Session token ID"
+      },
+      "control_result": {
+        "name": "Control result"
       }
     },
     "binary_sensor": {

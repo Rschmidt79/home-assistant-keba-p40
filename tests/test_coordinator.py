@@ -85,3 +85,39 @@ async def test_failure_marks_coordinator_unavailable_and_recovery(hass, mock_api
     mock_api.wallbox.side_effect = lambda serial: load("wallbox")
     await co.async_refresh()
     assert co.last_update_success
+
+
+async def test_one_control_forces_one_feedback_group_then_normal_polling(hass, mock_api):
+    """A successful command refreshes each feedback group once, without poll storms."""
+    from collections import Counter
+
+    co = coordinator(hass, mock_api)
+    with patch("custom_components.keba_p40.coordinator.time.monotonic", return_value=100):
+        await co.async_refresh()
+    for method in (mock_api.wallbox, mock_api.sessions, mock_api.get, mock_api.control):
+        method.reset_mock()
+
+    async def accepted(*args, **kwargs):
+        mock_api.last_request = {"phase": "control", "subtype": "http", "status": 200}
+        mock_api.control_result = {"write_attempted": True, "accepted": True}
+
+    mock_api.control.side_effect = accepted
+    with patch("custom_components.keba_p40.coordinator.time.monotonic", return_value=105):
+        await co.async_control("current", 16)
+    mock_api.control.assert_awaited_once()
+    assert mock_api.wallbox.await_count == 1
+    assert mock_api.sessions.await_count == 1
+    assert Counter(call.args[0] for call in mock_api.get.await_args_list) == {
+        "/v2/wallboxes": 1,
+        "/v2/profiles/chargepointmaxprofilezero": 3,
+        "/v2/configs/modbus": 1,
+        "/v2/configs/lmgmt": 1,
+    }
+    assert co._feedback_requested == co._feedback_consumed == 1
+    assert co.last_control["feedback_available"]
+    with patch("custom_components.keba_p40.coordinator.time.monotonic", return_value=110):
+        await co.async_refresh()
+    assert mock_api.wallbox.await_count == 2
+    assert mock_api.sessions.await_count == 1
+    assert mock_api.get.await_count == 6
+    mock_api.control.assert_awaited_once()
