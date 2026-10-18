@@ -41,6 +41,9 @@ def measurement(key, name, device_class, unit, *, category=None):
 
 
 SENSORS = (
+    SensorEntityDescription(
+        key="control_result", name="Control result", entity_category=EntityCategory.DIAGNOSTIC
+    ),
     SensorEntityDescription(key="charging_state", name="Charging state"),
     SensorEntityDescription(key="session_status", name="Session status"),
     SensorEntityDescription(
@@ -152,29 +155,59 @@ class P40Sensor(P40Entity, SensorEntity):
         super().__init__(coordinator, description.key)
         self.entity_description = description
 
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        if self._key in {"total_energy", "control_result"}:
+            self.async_on_remove(
+                self.coordinator.async_add_meter_listener(self.async_write_ha_state)
+            )
+
     @property
     def native_value(self):
-        return self.value()
+        if self._key == "control_result":
+            return self.coordinator.last_control.get("outcome", "none")
+        return self.data_value()
+
+    @property
+    def available(self):
+        return True if self._key == "control_result" else super().available
 
     @property
     def extra_state_attributes(self):
-        if self._key != "session_token_id":
+        """Passive continuity evidence; fetch bounds are not device timestamps."""
+        if self._key == "control_result":
+            return dict(
+                self.coordinator.last_control,
+                start_receipt=self.coordinator.control_receipts.get("start"),
+                stop_receipt=self.coordinator.control_receipts.get("stop"),
+            )
+        if self._key == "session_token_id":
+            data = self.coordinator.data
+            session = data.session
+            return {
+                "session_id": session.get("session_id"),
+                "session_start": session.get("session_start"),
+                "session_end": session.get("session_end"),
+                "session_status": session.get("session_status"),
+                "active_session": (
+                    self.coordinator.last_update_success
+                    and data.live.get("session_active") is True
+                    and session.get("session_status") in {"INITIATED", "PWM_CHARGING", "BLOCKED"}
+                    and session.get("session_start") is not None
+                    and session.get("session_end") is None
+                    and session.get("session_end_absent") is True
+                ),
+            }
+
+        if self._key != "total_energy":
             return None
-        data = self.coordinator.data
-        session = data.session
+        history = self.coordinator.meter_observations
         return {
-            "session_id": session.get("session_id"),
-            "session_start": session.get("session_start"),
-            "session_end": session.get("session_end"),
-            "session_status": session.get("session_status"),
-            "active_session": (
-                self.coordinator.last_update_success
-                and data.live.get("session_active") is True
-                and session.get("session_status") in {"INITIATED", "PWM_CHARGING", "BLOCKED"}
-                and session.get("session_start") is not None
-                and session.get("session_end") is None
-                and session.get("session_end_absent") is True
-            ),
+            "continuity_token": self.coordinator.meter_continuity_token if history else None,
+            "continuity_start": self.coordinator.meter_continuity_start if history else None,
+            "observation_end": history[-1]["end"] if history else None,
+            "observed_meter_kwh": history[-1]["meter"] if history else None,
+            "observation_count": len(history),
         }
 
     @property

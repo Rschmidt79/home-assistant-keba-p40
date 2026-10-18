@@ -54,10 +54,10 @@ async def test_manual_setup_and_duplicate(hass, mock_api):
 @pytest.mark.parametrize(
     "exception,error",
     [
-        (InvalidAuth(), "invalid_auth"),
-        (CannotConnect(), "cannot_connect"),
-        (ApiError(), "invalid_response"),
-        (WrongDevice(), "wrong_device"),
+        (InvalidAuth("sanitized test error"), "invalid_auth"),
+        (CannotConnect("sanitized test error"), "cannot_connect"),
+        (ApiError("sanitized test error"), "invalid_response"),
+        (WrongDevice("sanitized test error"), "wrong_device"),
     ],
 )
 async def test_errors_not_exposed(hass, mock_api, exception, error):

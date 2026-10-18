@@ -4,18 +4,30 @@ from __future__ import annotations
 
 import asyncio
 import re
+import time
+from contextlib import AsyncExitStack
 from typing import Any
 
 import aiohttp
 from yarl import URL
 
+from .diagnostics import safe_request, transport_subtype
+
 
 class ApiError(Exception):
     """Sanitized protocol/API error, never containing a response body."""
 
+    def __init__(self, message: str, *, status: int | None = None) -> None:
+        super().__init__(message)
+        self.status = status if type(status) is int and 100 <= status <= 599 else None
+
 
 class CannotConnect(ApiError):
-    """Transport failure."""
+    """Transport failure with a narrowly typed pre-write login signal."""
+
+    def __init__(self, message: str, *, login_disconnected: bool = False) -> None:
+        super().__init__(message)
+        self.login_disconnected = login_disconnected
 
 
 class InvalidAuth(ApiError):
@@ -66,6 +78,8 @@ class P40Api:
         self._access_token: str | None = None
         self._refresh_token: str | None = None
         self._lock = asyncio.Lock()
+        self.last_request = {}
+        self.control_result = {}
         self._ssl: bool | aiohttp.Fingerprint = verify_ssl
         if fingerprint:
             if not re.fullmatch(r"[0-9a-fA-F]{64}", fingerprint):
@@ -100,9 +114,29 @@ class P40Api:
         headers = {"Accept": "application/json"}
         if token:
             headers["Authorization"] = f"Bearer {token}"
+        started = time.monotonic()
+        diagnostic = dict(
+            phase="login" if path in AUTH_POSTS else ("control" if allowed_control else "feedback"),
+            subtype="unknown",
+            status=None,
+            error_code=None,
+        )
         try:
-            async with asyncio.timeout(10):
-                async with self._session.request(
+            async with asyncio.timeout(10), AsyncExitStack() as stack:
+                session = self._session
+                if allowed_control and path != "/v2/profiles/chargepointmaxprofilezero":
+                    # One owned connector per wallbox command, not profile writes.
+                    # A new HA
+                    # session alone still shares its pool; Connection: close
+                    # alone can still reuse the first connection. Never replay.
+                    session = await stack.enter_async_context(
+                        aiohttp.ClientSession(
+                            connector=aiohttp.TCPConnector(force_close=True),
+                            cookie_jar=aiohttp.DummyCookieJar(),
+                            trust_env=False,
+                        )
+                    )
+                async with session.request(
                     method,
                     self._base.with_path(path),
                     params=params,
@@ -111,16 +145,30 @@ class P40Api:
                     ssl=self._ssl,
                     allow_redirects=False,
                 ) as response:
+                    diagnostic.update(status=response.status, subtype="http")
                     # Do not parse/persist error bodies, which may echo credentials.
                     if response.status not in (200, 202):
                         return response.status, None
                     try:
                         body = await response.json(content_type=None)
                     except ValueError, UnicodeDecodeError:
+                        diagnostic["subtype"] = "invalid_json"
                         raise ApiError("Invalid JSON response") from None
                     return response.status, body
-        except aiohttp.ClientError, TimeoutError:
+        except aiohttp.ServerDisconnectedError:
+            diagnostic.update(subtype="disconnected", error_code=None)
+            # Only authentication may be replayed. No control endpoint signal.
+            raise CannotConnect(
+                "P40 connection failed", login_disconnected=path == "/v2/jwt/login"
+            ) from None
+        except (aiohttp.ClientError, TimeoutError) as error:
+            diagnostic.update(
+                subtype=transport_subtype(error, aiohttp), error_code=getattr(error, "errno", None)
+            )
             raise CannotConnect("P40 connection failed") from None
+        finally:
+            diagnostic["elapsed_ms"] = int(max(0, time.monotonic() - started) * 1000)
+            self.last_request = safe_request(diagnostic)
 
     async def _login(self) -> None:
         status, body = await self._request(
@@ -130,9 +178,9 @@ class P40Api:
         )
         if status in (401, 403, 422):
             self.clear_tokens()
-            raise InvalidAuth("P40 login rejected")
+            raise InvalidAuth("P40 login rejected", status=status)
         if status != 200:
-            raise ApiError(f"P40 login HTTP {status}")
+            raise ApiError(f"P40 login HTTP {status}", status=status)
         if not isinstance(body, dict) or not isinstance(body.get("accessToken"), str):
             raise ApiError("Invalid login response")
         if not body["accessToken"]:
@@ -162,7 +210,7 @@ class P40Api:
                     self._refresh_token = body["refreshToken"]
                 return True
             if status not in (401, 403, 422):
-                raise ApiError(f"P40 refresh HTTP {status}")
+                raise ApiError(f"P40 refresh HTTP {status}", status=status)
         self.clear_tokens()
         await self._login()
         return False
@@ -188,9 +236,9 @@ class P40Api:
                     )
             if status in (401, 403):
                 self.clear_tokens()
-                raise InvalidAuth("P40 authorization rejected")
+                raise InvalidAuth("P40 authorization rejected", status=status)
             if status not in (200, 202):
-                raise ApiError(f"P40 data HTTP {status}")
+                raise ApiError(f"P40 data HTTP {status}", status=status)
             return body
 
     async def identity(self) -> str:
@@ -230,15 +278,25 @@ class P40Api:
         is not replayed: the caller must inspect subsequent physical data.
         """
         async with self._lock:
-            await self._login()
+            self.control_result = dict(write_attempted=False, accepted=False)
+            try:
+                await self._login()
+            except CannotConnect as error:
+                if not error.login_disconnected:
+                    raise
+                # Exactly one fresh authentication attempt, before any device POST.
+                # A second failure escapes; control and feedback are never replayed.
+                self.clear_tokens()
+                await self._login()
+            self.control_result["write_attempted"] = True
             status, body = await self._request(
                 "POST", path, payload=payload, token=self._access_token
             )
             if status in (401, 403):
                 self.clear_tokens()
-                raise InvalidAuth("P40 control authorization rejected")
+                raise InvalidAuth("P40 control authorization rejected", status=status)
             if status not in (200, 202):
-                raise ApiError(f"P40 control HTTP {status}")
+                raise ApiError(f"P40 control HTTP {status}", status=status)
             if not isinstance(body, dict):
                 raise ApiError("Invalid control response")
             if "acceptStatus" in body:
@@ -277,6 +335,7 @@ class P40Api:
                     raise ApiError("Invalid control wallbox response")
             else:
                 raise ApiError("Missing control acceptance")
+            self.control_result["accepted"] = True
             return body
 
     def clear_tokens(self) -> None:

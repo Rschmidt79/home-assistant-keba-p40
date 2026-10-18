@@ -23,7 +23,7 @@ async def test_entities_reset_identity_availability_and_diagnostics(hass, mock_a
     entry.runtime_data = co
     sensors = {d.key: P40Sensor(co, d) for d in SENSORS}
     binaries = {d.key: P40BinarySensor(co, d) for d in BINARY_SENSORS}
-    assert len(sensors) == 29
+    assert len(sensors) == 30
     assert len(binaries) == 4
     assert sensors["total_energy"].native_value == 123.4567
     assert sensors["total_energy"].state_class == SensorStateClass.TOTAL_INCREASING
@@ -53,7 +53,9 @@ async def test_entities_reset_identity_availability_and_diagnostics(hass, mock_a
     assert sensors["serial"].device_info["name"] == "P40_12345678"
     assert not sensors["session_end"].available
     co.async_set_update_error(RuntimeError("test"))
-    assert not any(ent.available for ent in [*sensors.values(), *binaries.values()])
+    assert sensors["control_result"].available  # Failure diagnostics remain readable.
+    assert not any(ent.available for key, ent in sensors.items() if key != "control_result")
+    assert not any(ent.available for ent in binaries.values())
     diag = await async_get_config_entry_diagnostics(hass, entry)
     serialized = json.dumps(diag, default=str)
     assert "example-user" not in serialized and "example-password" not in serialized

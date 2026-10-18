@@ -129,6 +129,7 @@ def parse_sessions(body: Any, serial: str) -> dict[str, Any]:
     start = timestamp_ms(selected.get("startDate"))
     return {
         "session_id": selected["id"],
+        "session_end_present": selected.get("endDate") is not None,
         "session_token_id": session_token_id(selected.get("tokenId")),
         "session_end_absent": selected.get("endDate") is None,
         "session_status": selected["status"],

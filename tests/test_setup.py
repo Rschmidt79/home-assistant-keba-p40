@@ -25,8 +25,8 @@ async def test_actual_ha_setup_entities_failure_recovery_unload(hass, mock_api):
         await hass.async_block_till_done()
         registry = er.async_get(hass)
         entities = er.async_entries_for_config_entry(registry, entry.entry_id)
-        assert len(entities) == 37
-        assert len([entity for entity in entities if entity.disabled_by is None]) == 33
+        assert len(entities) == 38
+        assert len([entity for entity in entities if entity.disabled_by is None]) == 34
         assert {entity.domain for entity in entities} == {
             "sensor",
             "binary_sensor",
@@ -55,8 +55,9 @@ async def test_actual_ha_setup_entities_failure_recovery_unload(hass, mock_api):
         assert all(
             hass.states.get(entity.entity_id).state == STATE_UNAVAILABLE
             for entity in entities
-            if entity.disabled_by is None
+            if entity.disabled_by is None and entity.unique_id != "12345678_control_result"
         )
+        assert hass.states.get(indexed["12345678_control_result"]).state == "none"
         from .conftest import load
 
         mock_api.wallbox.side_effect = lambda serial: load("wallbox")
@@ -125,3 +126,38 @@ async def test_legacy_api_admin_default_and_missing_password(hass):
     data.pop("password")
     with pytest.raises(ConfigEntryAuthFailed):
         make_api(hass, data)
+
+
+async def test_enabled_current_entity_has_numeric_ha_state(hass, mock_api):
+    entry = MockConfigEntry(domain="keba_p40", unique_id="12345678", data=DATA)
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    registered = registry.async_get_or_create(
+        "number",
+        "keba_p40",
+        "12345678_charging_current_limit",
+        config_entry=entry,
+        suggested_object_id="test_charging_current_limit",
+        disabled_by=None,
+    )
+    with patch("custom_components.keba_p40.make_api", return_value=mock_api):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+        state = hass.states.get(registered.entity_id)
+        assert state is not None
+        assert float(state.state) == 16
+        assert state.attributes["unit_of_measurement"] == "A"
+        assert state.attributes.get("restored") is not True
+        from dataclasses import replace
+
+        coordinator = entry.runtime_data
+        coordinator.async_set_updated_data(
+            replace(coordinator.data, configuration={"charging_current_limit": None})
+        )
+        assert hass.states.get(registered.entity_id).state == STATE_UNAVAILABLE
+        coordinator.async_set_updated_data(
+            replace(coordinator.data, configuration={"charging_current_limit": 9})
+        )
+        assert float(hass.states.get(registered.entity_id).state) == 9
+        assert await hass.config_entries.async_unload(entry.entry_id)
+        await hass.async_block_till_done()

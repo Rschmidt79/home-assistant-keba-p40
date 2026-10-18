@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import math
+import time
 from typing import Any
 
 from homeassistant.exceptions import HomeAssistantError
 
-from .api import ApiError
+from .api import ApiError, CannotConnect, InvalidAuth, WrongDevice
+from .diagnostics import safe_request
 
 PROFILE_PATH = "/v2/profiles/chargepointmaxprofilezero"
 DAYS = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"}
@@ -30,11 +32,17 @@ def validate_current(value: Any, maximum: float | None = 16) -> int:
 def profile_current(body: Any) -> float:
     """Only a simple, active, all-day level-zero CP maximum profile is editable.
 
-    Never overwrite schedules, Tx profiles, validity windows or phase settings.
-    This is a documented but not physically audited response schema.
+    Accept absent/null or already-effective integer epoch-ms validFrom and
+    absent/null numberOfPhases, as observed in the commissioned device profile.
+    Reject expiry, future starts, schedules, Tx profiles and explicit phases.
+    Parsing does not mutate the profile; control changes only the current item.
     """
     if not isinstance(body, dict):
         raise ApiError("Invalid charging profile response")
+    valid_from = body.get("validFrom")
+    valid_from_ok = valid_from is None or (
+        type(valid_from) is int and 0 <= valid_from <= time.time() * 1000
+    )
     items = body.get("items")
     if (
         not isinstance(body.get("name"), str)
@@ -46,7 +54,7 @@ def profile_current(body: Any) -> float:
         or body.get("stackLevel", 0) != 0
         or body.get("active", True) is not True
         or body.get("relative", False) is not False
-        or body.get("validFrom") is not None
+        or not valid_from_ok
         or body.get("validTo") is not None
         or not isinstance(items, list)
         or len(items) != 1
@@ -60,7 +68,7 @@ def profile_current(body: Any) -> float:
         or not isinstance(item.get("daysOfWeek"), list)
         or not all(isinstance(day, str) for day in item["daysOfWeek"])
         or set(item["daysOfWeek"]) != DAYS
-        or "numberOfPhases" in item
+        or item.get("numberOfPhases") is not None
     ):
         raise ApiError("Scheduled or phase-specific profile cannot be changed")
     value = item.get("maxCurrentOffered")
@@ -72,6 +80,9 @@ def profile_current(body: Any) -> float:
 async def execute_control(coordinator, action: str, current: float | None) -> None:
     """Accepted command is followed by physical reads; never cache a wish."""
     api, serial = coordinator.api, coordinator.serial
+    coordinator.last_control.update(phase="preflight")
+    api.last_request = {}
+    api.control_result = {}
     try:
         if not coordinator.last_update_success:
             raise ApiError("P40 state is unavailable")
@@ -105,6 +116,54 @@ async def execute_control(coordinator, action: str, current: float | None) -> No
             )
         else:
             raise ApiError("Unsupported control")
-    except ApiError:
-        # Never expose response bodies, password, token or URLs in HA errors.
-        raise HomeAssistantError("KEBA control failed; inspect refreshed physical state") from None
+        coordinator.last_control.update(
+            outcome="accepted",
+            **safe_request(getattr(api, "last_request", {})),
+            write_attempted=getattr(api, "control_result", {}).get("write_attempted") is True,
+            accepted=getattr(api, "control_result", {}).get("accepted") is True,
+        )
+    except ApiError as err:
+        # Allowlisted classes and integer HTTP status only; NEVER exception text.
+        kind = {
+            CannotConnect: "transport",
+            InvalidAuth: "authentication",
+            WrongDevice: "identity",
+            ApiError: "protocol",
+        }.get(type(err), "protocol")
+        status = err.status if type(err.status) is int and 100 <= err.status <= 599 else None
+        diagnostic = safe_request(getattr(api, "last_request", {}))
+        if diagnostic["phase"] == "unknown":
+            diagnostic["phase"] = "preflight"
+        if status is not None:
+            diagnostic["status"] = status
+        elif (
+            kind == "protocol"
+            and diagnostic.get("status") in (200, 202)
+            and diagnostic["subtype"] == "http"
+        ):
+            diagnostic["subtype"] = "schema"
+        receipt = getattr(api, "control_result", {})
+        sent, accepted = receipt.get("write_attempted") is True, receipt.get("accepted") is True
+        outcome = (
+            "feedback_failed"
+            if accepted
+            else (
+                "failed_before_write"
+                if not sent
+                else (
+                    "rejected"
+                    if diagnostic.get("status") is not None and diagnostic["status"] >= 400
+                    else "uncertain"
+                )
+            )
+        )
+        coordinator.last_control.update(
+            outcome=outcome, **diagnostic, write_attempted=sent, accepted=accepted
+        )
+        detail = f"{kind}; HTTP {status}" if status is not None else kind
+        detail += f"; phase={diagnostic['phase']}; subtype={diagnostic['subtype']}"
+        if diagnostic["elapsed_ms"] is not None:
+            detail += f"; elapsed_ms={diagnostic['elapsed_ms']}"
+        raise HomeAssistantError(
+            f"KEBA control failed ({detail}); inspect refreshed physical state"
+        ) from None

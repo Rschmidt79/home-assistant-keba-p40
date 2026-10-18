@@ -354,6 +354,27 @@ async def test_actual_entry_reload_keeps_identity_and_never_controls(hass, mock_
             e.unique_id: e.entity_id
             for e in er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id)
         }
-        assert before == after and len(after) == 37
+        assert before == after and len(after) == 38
         mock_api.control.assert_not_called()
         assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+def test_commissioned_profile_format_is_readable_without_mutation():
+    from copy import deepcopy
+
+    profile = baseline(9000)
+    profile["validFrom"] = 1791158400000
+    profile["items"][0]["numberOfPhases"] = None
+    original = deepcopy(profile)
+    assert profile_current(profile) == 9
+    assert profile == original
+
+
+@pytest.mark.parametrize(
+    "start", [True, -1, "1791158400000", float("inf"), float("nan"), 1791158400000.0, 9999999999999]
+)
+def test_invalid_or_future_profile_validity_is_rejected(start):
+    profile = baseline()
+    profile["validFrom"] = start
+    with pytest.raises(ApiError):
+        profile_current(profile)

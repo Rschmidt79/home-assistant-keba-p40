@@ -27,7 +27,7 @@ class P40Entity(CoordinatorEntity[P40Coordinator]):
             hw_version=data.device.get("hardware_revision"),
         )
 
-    def value(self):
+    def data_value(self):
         """Read an explicitly parsed value; missing values remain unknown."""
         data = self.coordinator.data
         for section in (data.live, data.session, data.configuration, data.device):
@@ -37,4 +37,4 @@ class P40Entity(CoordinatorEntity[P40Coordinator]):
 
     @property
     def available(self) -> bool:
-        return super().available and self.value() is not None
+        return super().available and self.data_value() is not None

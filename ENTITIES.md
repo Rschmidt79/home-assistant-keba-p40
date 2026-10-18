@@ -2,14 +2,15 @@
 
 Unique IDs retain `{serial}_{key}`; for this device the prefix is `12345678_`.
 One device has identifier `(keba_p40, serial)`. Entity IDs/friendly names are not
-stable identifiers. All original 32 monitoring entities remain enabled by default.
-The four new controls are registered disabled; enable explicitly to instantiate.
+stable identifiers. All 33 monitoring entities from 0.2.4 retain their unique IDs. Version 0.2.5 adds
+one enabled control-result diagnostic sensor (34 monitoring entities total).
+The four existing controls are registered disabled; enable explicitly to instantiate.
 All entities use coordinator availability, and missing measurements are unavailable.
 
 W = GET `/v2/wallboxes/{serial}`. S = GET `/v2/sessions` with serial filter, newest
 first, preferring an open session and otherwise the most recent completed session.
 C = REST GET config group. Strings/config properties refer to physically audited
-fields except the new baseline-profile control, which is documentation-only.
+fields. The baseline-profile cap has also been exercised on the reference charger.
 
 | Name / key | Type | Source / conversion | Semantics |
 |---|---|---|---|
@@ -17,6 +18,7 @@ fields except the new baseline-profile control, which is documentation-only.
 | Charging / charging | binary_sensor | W.state == CHARGING | Actual KEBA charging state |
 | Session active / session_active | binary_sensor | W.sessionActive | Open session, may be blocked |
 | Error / error | binary_sensor, problem | W.state in RECOVER_FROM_ERROR/UNRECOVERABLE_ERROR/DEGRADED | Error-state indicator, not raw error code |
+| Control result / control_result | diagnostic sensor | Latest explicit control outcome | Sanitized per-action receipts and physical-feedback status; none before any command |
 | Charging state / charging_state | sensor | W.state | Known KEBA enum, unknown enum unavailable |
 | Session token ID / session_token_id | sensor | S.tokenId | Opaque authorizing tag ID; session scope/status attributes; unavailable if absent |
 | Session status / session_status | sensor | S.status | INITIATED/PWM_CHARGING/BLOCKED/CLOSED |

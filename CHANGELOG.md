@@ -1,3 +1,26 @@
+# 0.2.5
+
+- Preserve the complete production stability fixes when updating through HACS.
+- Accept supported current profiles with a past validFrom and null phase count;
+  restore a numeric current-limit entity by avoiding NumberEntity.value collision.
+- Retain per-action control receipts, uncertain outcomes and fresh physical feedback;
+  never replay an ambiguous control POST.
+- Use fresh connections for wallbox controls and prevent stale polling from hiding
+  a current-limit acknowledgement.
+- Publish passive meter observation freshness even when the meter value is unchanged.
+- Keep existing entity IDs, device identity, config entries and control enablement.
+  Add one control-result diagnostic sensor; controls remain disabled for new installs.
+
+Automated regression tests run on Home Assistant 2026.9.4; the equivalent driver
+code has been exercised on the reference installation running 2026.10.1.
+
+Update while the charger is idle, with a Home Assistant backup, then fully restart
+Home Assistant. Integration reload alone does not reliably replace imported Python
+modules. Do not remove/re-add the integration. Local charging-controller scripts,
+templates and dashboards are separate and are not installed or replaced by this release.
+A downgrade to public 0.2.4 loses these fixes; restore the complete pre-update backup
+instead if rollback is needed. Climate/preconditioning changes are not included.
+
 # 0.2.4
 
 - Add a read-only session token ID sensor for RFID-based automation, with session

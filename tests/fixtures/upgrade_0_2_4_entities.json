@@ -1,0 +1,39 @@
+{
+  "sensor": [
+    "charging_state",
+    "session_status",
+    "session_token_id",
+    "active_power",
+    "current_l1",
+    "current_l2",
+    "current_l3",
+    "voltage_l1",
+    "voltage_l2",
+    "voltage_l3",
+    "current_offered",
+    "maximum_current",
+    "total_energy",
+    "session_energy",
+    "temperature",
+    "power_factor",
+    "session_start",
+    "session_end",
+    "session_duration",
+    "model",
+    "serial",
+    "package_version",
+    "baseio_firmware",
+    "meter_firmware",
+    "safety_firmware",
+    "api_version",
+    "rest_alias",
+    "failsafe_current",
+    "failsafe_timeout"
+  ],
+  "binary_sensor": [
+    "vehicle_plugged",
+    "charging",
+    "session_active",
+    "error"
+  ]
+}
