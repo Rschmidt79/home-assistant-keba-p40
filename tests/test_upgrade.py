@@ -13,7 +13,10 @@ from .test_setup import DATA
 
 
 @pytest.mark.parametrize("patched", [False, True], ids=["public-0.2.4", "patched-0.2.4"])
-async def test_existing_install_retains_identity_settings_and_controls(hass, mock_api, patched):
+@pytest.mark.parametrize("controls_enabled", [False, True])
+async def test_existing_install_retains_identity_settings_and_controls(
+    hass, mock_api, patched, controls_enabled
+):
     entry = MockConfigEntry(
         domain="keba_p40",
         unique_id="12345678",
@@ -61,9 +64,7 @@ async def test_existing_install_retains_identity_settings_and_controls(hass, moc
                 config_entry=entry,
                 device_id=device.id,
                 suggested_object_id=f"existing_driveway_{key}",
-                disabled_by=er.RegistryEntryDisabler.USER
-                if key == "charging_availability"
-                else None,
+                disabled_by=er.RegistryEntryDisabler.USER if not controls_enabled else None,
             )
         )
     before = {r.unique_id: (r.entity_id, r.disabled_by, r.device_id) for r in records}
@@ -76,6 +77,7 @@ async def test_existing_install_retains_identity_settings_and_controls(hass, moc
             assert entry.unique_id == "12345678" and entry.version == 2
             current = er.async_entries_for_config_entry(registry, entry.entry_id)
             assert len(current) == 38
+            assert set(before).issubset({r.unique_id for r in current})
             for r in current:
                 if r.unique_id in before:
                     assert (r.entity_id, r.disabled_by, r.device_id) == before[r.unique_id]
@@ -83,7 +85,10 @@ async def test_existing_install_retains_identity_settings_and_controls(hass, moc
                 dr.async_get(hass).async_get(device.id).name_by_user == "Existing driveway charger"
             )
             cap_id = before["12345678_charging_current_limit"][0]
-            assert float(hass.states.get(cap_id).state) == 16
+            if controls_enabled:
+                assert float(hass.states.get(cap_id).state) == 16
+            else:
+                assert hass.states.get(cap_id) is None
             mock_api.control.assert_not_called()
             assert await hass.config_entries.async_unload(entry.entry_id)
             await hass.async_block_till_done()

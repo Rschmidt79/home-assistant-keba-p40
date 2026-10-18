@@ -11,6 +11,9 @@
 - Keep existing entity IDs, device identity, config entries and control enablement.
   Add one control-result diagnostic sensor; controls remain disabled for new installs.
 
+Automated regression tests run on Home Assistant 2026.9.4; the equivalent driver
+code has been exercised on the reference installation running 2026.10.1.
+
 Update while the charger is idle, with a Home Assistant backup, then fully restart
 Home Assistant. Integration reload alone does not reliably replace imported Python
 modules. Do not remove/re-add the integration. Local charging-controller scripts,
