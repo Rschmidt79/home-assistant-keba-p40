@@ -19,7 +19,7 @@ versions are not yet physically verified. This is an independent community
 project, not an official KEBA product.
 
 Domain: `keba_p40`.
-Version 0.2.5. Requires Home Assistant 2026.9 or newer (Python 3.14).
+Version 0.2.6. Requires Home Assistant 2026.9 or newer (Python 3.14).
 
 33 existing monitoring entities retain their unique IDs. This release adds
 a control-result diagnostic sensor. Four additional controls
@@ -52,7 +52,7 @@ TLS. Tests use synthetic credentials and never contact a physical charger.
 
 1. Make a Home Assistant backup. Update while charging and the charging session are
    both off, with no imminent scheduled charging window.
-2. Download 0.2.5 in HACS, retaining the existing KEBA integration/config entry.
+2. Download 0.2.6 in HACS, retaining the existing KEBA integration/config entry.
 3. Fully restart Home Assistant; an integration reload alone is insufficient for
    reliably replacing Python modules already imported by other integrations.
 4. Check that the current limit is numeric, existing entity IDs and enabled controls
@@ -128,15 +128,18 @@ Port 502 is irrelevant to this integration. `p40.local` requires working mDNS.
 
 ## HACS
 
-Add `https://github.com/Rschmidt79/home-assistant-keba-p40` in HACS →
-Custom repositories → **Integration**. Download the latest release, then restart
-Home Assistant. The existing config entry and current entities are reused.
+Open HACS, search for **KEBA KeContact P40**, download it, then restart Home
+Assistant. The existing config entry and current entities are reused.
 Do not delete the integration or create a duplicate entry.
+
+Fallback if the search finds nothing: add
+`https://github.com/Rschmidt79/home-assistant-keba-p40` in HACS →
+Custom repositories → **Integration**, then download the latest release.
 
 Remove the old Ich-h4lt repository from HACS management first so it cannot
 overwrite this integration. Keep the HA config entry/device. Back up your HA
 configuration before switching repositories. Future releases appear as HACS
-updates. This is a custom repository, not an entry in the default HACS catalog.
+updates.
 
 
 ## Entities and semantics
@@ -154,8 +157,10 @@ Serial is stable identity; alias is metadata. No vehicle identity inference exis
 
 ## RFID / session token ID
 
-The **Session token ID** sensor exposes `tokenId` from the selected session. The
-KEBA REST schema defines this as the `Token.id` that authorized that session. It
+The **Session token ID** sensor is **disabled by default** because chip IDs authorize
+charging and, as a state, are stored in history, the logbook and the recorder
+database. Enable it in the entity settings only if you want that. It exposes
+`tokenId` from the selected session. The KEBA REST schema defines this as the `Token.id` that authorized that session. It
 is an opaque identifier: case and leading zeros are preserved. No separate token
 list request, authorization change or charging command is made.
 
@@ -172,7 +177,7 @@ Use a fresh active session and its session identity when binding a selection;
 never use a historical tag as proof for a new connection. This integration does
 not add vehicle mappings, bypass charging plans, or synthesize battery data.
 
-Chip IDs are available locally in HA states/history but redacted from integration
+Once enabled, chip IDs are available locally in HA states/history but redacted from integration
 diagnostics. Do not publish real IDs in issues or test fixtures. Session chip
 values are schema-supported; representation on each firmware requires live
 verification.
@@ -259,7 +264,7 @@ and protected by registry/setup tests and ruff F821 checks.
 ## Publishing updates
 
 Change the manifest version, run tests/ruff/hassfest, commit and push to main,
-then create a matching GitHub release such as v0.2.5. HACS downloads the release
+then create a matching GitHub release such as v0.2.6. HACS downloads the release
 source tree. A tag alone is not a release. Active GitHub Actions in `.github/workflows/checks.yaml` run pytest, ruff,
 hassfest and HACS validation. Tests block network sockets and no CI job contacts
 a real charger.
