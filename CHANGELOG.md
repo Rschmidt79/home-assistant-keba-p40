@@ -1,3 +1,11 @@
+# 0.2.6
+
+- The "Session token ID" sensor is now disabled by default, because RFID tag IDs
+  authorize charging and as a state end up in history, the logbook and the recorder
+  database. New installs must enable it in the entity settings; existing entities
+  keep their current enabled/disabled state.
+- README: HACS search for "KEBA KeContact P40" first, custom repository as fallback.
+
 # 0.2.5
 
 - Preserve the complete production stability fixes when updating through HACS.

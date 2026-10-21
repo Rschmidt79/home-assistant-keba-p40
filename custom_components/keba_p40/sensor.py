@@ -47,7 +47,12 @@ SENSORS = (
     SensorEntityDescription(key="charging_state", name="Charging state"),
     SensorEntityDescription(key="session_status", name="Session status"),
     SensorEntityDescription(
-        key="session_token_id", name="Session token ID", icon="mdi:card-account-details-outline"
+        key="session_token_id",
+        name="Session token ID",
+        icon="mdi:card-account-details-outline",
+        # RFID tag IDs authorize charging; as a state they reach history, the
+        # logbook and the recorder database, so users must opt in.
+        entity_registry_enabled_default=False,
     ),
     measurement("active_power", "Active power", SensorDeviceClass.POWER, UnitOfPower.WATT),
     *(

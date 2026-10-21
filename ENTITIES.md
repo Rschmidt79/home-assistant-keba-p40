@@ -20,7 +20,7 @@ fields. The baseline-profile cap has also been exercised on the reference charge
 | Error / error | binary_sensor, problem | W.state in RECOVER_FROM_ERROR/UNRECOVERABLE_ERROR/DEGRADED | Error-state indicator, not raw error code |
 | Control result / control_result | diagnostic sensor | Latest explicit control outcome | Sanitized per-action receipts and physical-feedback status; none before any command |
 | Charging state / charging_state | sensor | W.state | Known KEBA enum, unknown enum unavailable |
-| Session token ID / session_token_id | sensor | S.tokenId | Opaque authorizing tag ID; session scope/status attributes; unavailable if absent |
+| Session token ID / session_token_id | sensor | S.tokenId | Opaque authorizing tag ID; session scope/status attributes; unavailable if absent; disabled by default (opt-in, IDs reach history/recorder) |
 | Session status / session_status | sensor | S.status | INITIATED/PWM_CHARGING/BLOCKED/CLOSED |
 | Active power / active_power | sensor, W, measurement | W.meter.totalActivePower / 1000 | Measured mW→W |
 | Current L1 / current_l1 | sensor, A, measurement | W.meter.lines[L1].current / 1000 | Actual current |
