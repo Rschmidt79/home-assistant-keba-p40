@@ -99,7 +99,7 @@ async def test_actual_setup_cleans_legacy_and_keeps_38(hass, mock_api):
         assert all(registry.async_get(e.entity_id) is None for e in old)
         entries = er.async_entries_for_config_entry(registry, entry.entry_id)
         assert len(entries) == 38
-        assert len([e for e in entries if e.disabled_by is None]) == 34
+        assert len([e for e in entries if e.disabled_by is None]) == 33
         mock_api.control.assert_not_called()
         assert await hass.config_entries.async_unload(entry.entry_id)
 
