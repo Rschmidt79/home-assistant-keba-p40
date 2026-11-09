@@ -1,3 +1,15 @@
+# 0.2.7
+
+- The username field defaults to `admin`, the REST username of the reference P40.
+- README: Marketplace (HA 2026.11) instead of only HACS; Core PR #173179 was closed.
+- README: state that the reference P40 logs in with the username `admin`.
+- Config flow keeps host, port, username and fingerprint after an error (the
+  password is never echoed) and trims whitespace around the username.
+- New `access_denied` error when login succeeds but the account may not read the
+  REST API, instead of the same message as wrong credentials.
+- Debug logging (`custom_components.keba_p40.api`) of request method, path, HTTP
+  status and timing. Credentials, tokens and bodies are never logged.
+
 # 0.2.6
 
 - The "Session token ID" sensor is now disabled by default, because RFID tag IDs

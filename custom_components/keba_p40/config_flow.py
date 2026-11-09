@@ -14,7 +14,7 @@ from homeassistant.helpers.selector import TextSelector, TextSelectorConfig, Tex
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from . import make_api
-from .api import ApiError, CannotConnect, InvalidAuth, WrongDevice
+from .api import AccessDenied, ApiError, CannotConnect, InvalidAuth, WrongDevice
 from .const import CONF_FINGERPRINT, DEFAULT_PORT, DOMAIN
 from .models import config_pairs, text
 
@@ -27,7 +27,7 @@ def schema(defaults: dict[str, Any]) -> vol.Schema:
             vol.Required(CONF_PORT, default=defaults.get(CONF_PORT, DEFAULT_PORT)): vol.All(
                 vol.Coerce(int), vol.Range(min=1, max=65535)
             ),
-            vol.Required(CONF_USERNAME, default=defaults.get(CONF_USERNAME, "")): str,
+            vol.Required(CONF_USERNAME, default=defaults.get(CONF_USERNAME, "admin")): str,
             vol.Required(CONF_PASSWORD): TextSelector(
                 TextSelectorConfig(type=TextSelectorType.PASSWORD)
             ),
@@ -48,6 +48,8 @@ def normalize(data: dict[str, Any]) -> dict[str, Any]:
         if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?", host):
             raise ValueError("Invalid hostname") from None
     result[CONF_HOST] = host
+    if isinstance(result.get(CONF_USERNAME), str):
+        result[CONF_USERNAME] = result[CONF_USERNAME].strip()
     fingerprint = result.get(CONF_FINGERPRINT, "").replace(":", "").strip().lower()
     if fingerprint and not re.fullmatch(r"[0-9a-f]{64}", fingerprint):
         raise ValueError("Invalid certificate fingerprint")
@@ -94,6 +96,8 @@ class P40ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(serial)
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(title=title, data=data)
+            except AccessDenied:
+                errors["base"] = "access_denied"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
             except CannotConnect:
@@ -104,6 +108,9 @@ class P40ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_response"
             except ValueError:
                 errors["base"] = "invalid_host_or_fingerprint"
+        if errors and user_input is not None:
+            # Keep the entered values; never echo the password back.
+            self._defaults = {k: v for k, v in user_input.items() if k != CONF_PASSWORD}
         return self.async_show_form(
             step_id=self._mode, data_schema=schema(self._defaults), errors=errors
         )

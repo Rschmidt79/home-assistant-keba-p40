@@ -11,7 +11,13 @@ from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.keba_p40.api import ApiError, CannotConnect, InvalidAuth, WrongDevice
+from custom_components.keba_p40.api import (
+    AccessDenied,
+    ApiError,
+    CannotConnect,
+    InvalidAuth,
+    WrongDevice,
+)
 from custom_components.keba_p40.config_flow import normalize
 
 DATA = {
@@ -55,6 +61,7 @@ async def test_manual_setup_and_duplicate(hass, mock_api):
     "exception,error",
     [
         (InvalidAuth("sanitized test error"), "invalid_auth"),
+        (AccessDenied("sanitized test error"), "access_denied"),
         (CannotConnect("sanitized test error"), "cannot_connect"),
         (ApiError("sanitized test error"), "invalid_response"),
         (WrongDevice("sanitized test error"), "wrong_device"),
@@ -167,3 +174,20 @@ async def test_invalid_fingerprint_and_discovery_without_port(hass):
         "keba_p40", context={"source": SOURCE_ZEROCONF}, data=info
     )
     assert result["reason"] == "invalid_discovery"
+
+
+async def test_error_keeps_entered_values_but_not_password(hass, mock_api):
+    mock_api.identity.side_effect = InvalidAuth("sanitized test error")
+    result = await hass.config_entries.flow.async_init("keba_p40", context={"source": SOURCE_USER})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {**DATA, "host": "192.0.2.14", "username": " user@example.com "}
+    )
+    assert result["errors"] == {"base": "invalid_auth"}
+    defaults = {str(k): k.default() for k in result["data_schema"].schema if callable(k.default)}
+    assert defaults["host"] == "192.0.2.14"
+    assert defaults["username"] == " user@example.com "
+    assert "example-password" not in repr(result["data_schema"])
+
+
+def test_normalize_strips_username():
+    assert normalize({**DATA, "username": "  user@example.com "})["username"] == "user@example.com"
