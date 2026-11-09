@@ -111,9 +111,11 @@ A future transition will require checking config-entry and entity compatibility.
    `/config/custom_components/keba_p40`. Keep the folder name `keba_p40`.
 3. Restart Home Assistant. Open Settings → Devices & services → Add integration →
    **KEBA KeContact P40**, or accept its discovery card.
-4. Enter `p40.local` or `192.0.2.14`, HTTPS port `8443`, normal KEBA username and
-   password. These are stored as standard HA config-entry credentials. JWTs stay
-   in memory. HA config backups contain credentials; protect those backups.
+4. Enter `p40.local` or `192.0.2.14`, HTTPS port `8443`, the KEBA REST username and
+   password. The reference P40 uses the username `admin`; an e-mail address from the
+   KEBA web interface or app is not necessarily accepted by the REST API. These are
+   stored as standard HA config-entry credentials. JWTs stay in memory.
+   HA config backups contain credentials; protect those backups.
 5. Use the device certificate SHA-256 fingerprint with CA validation disabled for
    a pinned self-signed certificate, or trust its certificate in HA. Disabling CA
    validation without a fingerprint provides encryption without server identity
