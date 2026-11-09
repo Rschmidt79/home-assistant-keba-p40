@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import re
 import time
 from contextlib import AsyncExitStack
@@ -12,6 +13,8 @@ import aiohttp
 from yarl import URL
 
 from .diagnostics import safe_request, transport_subtype
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class ApiError(Exception):
@@ -32,6 +35,10 @@ class CannotConnect(ApiError):
 
 class InvalidAuth(ApiError):
     """Authentication cannot be recovered."""
+
+
+class AccessDenied(InvalidAuth):
+    """Login succeeded but the account may not read the REST API."""
 
 
 class WrongDevice(ApiError):
@@ -168,6 +175,15 @@ class P40Api:
             raise CannotConnect("P40 connection failed") from None
         finally:
             diagnostic["elapsed_ms"] = int(max(0, time.monotonic() - started) * 1000)
+            # Method, path, status and timing only: never credentials, tokens or bodies.
+            _LOGGER.debug(
+                "P40 %s %s -> status=%s subtype=%s %d ms",
+                method,
+                path,
+                diagnostic["status"],
+                diagnostic["subtype"],
+                diagnostic["elapsed_ms"],
+            )
             self.last_request = safe_request(diagnostic)
 
     async def _login(self) -> None:
@@ -235,8 +251,9 @@ class P40Api:
                         "GET", path, params=params, token=self._access_token
                     )
             if status in (401, 403):
+                # A token was obtained, so this is not a rejected login.
                 self.clear_tokens()
-                raise InvalidAuth("P40 authorization rejected", status=status)
+                raise AccessDenied("P40 authorization rejected", status=status)
             if status not in (200, 202):
                 raise ApiError(f"P40 data HTTP {status}", status=status)
             return body

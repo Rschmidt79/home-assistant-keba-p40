@@ -19,7 +19,7 @@ versions are not yet physically verified. This is an independent community
 project, not an official KEBA product.
 
 Domain: `keba_p40`.
-Version 0.2.6. Requires Home Assistant 2026.9 or newer (Python 3.14).
+Version 0.2.7. Requires Home Assistant 2026.9 or newer (Python 3.14).
 
 33 existing monitoring entities retain their unique IDs. This release adds
 a control-result diagnostic sensor. Four additional controls
@@ -52,7 +52,7 @@ TLS. Tests use synthetic credentials and never contact a physical charger.
 
 1. Make a Home Assistant backup. Update while charging and the charging session are
    both off, with no imminent scheduled charging window.
-2. Download 0.2.6 in HACS, retaining the existing KEBA integration/config entry.
+2. Download 0.2.7 in HACS, retaining the existing KEBA integration/config entry.
 3. Fully restart Home Assistant; an integration reload alone is insufficient for
    reliably replacing Python modules already imported by other integrations.
 4. Check that the current limit is numeric, existing entity IDs and enabled controls

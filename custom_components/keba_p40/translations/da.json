@@ -42,6 +42,7 @@
     },
     "error": {
       "invalid_auth": "Authentication rejected. Check your KEBA credentials.",
+      "access_denied": "Login lykkedes, men kontoen har ikke adgang til P40'ens REST-API. Prøv en anden KEBA-bruger (fx administratoren).",
       "cannot_connect": "Cannot connect to the P40. Check network, HTTPS port and certificate settings.",
       "wrong_device": "The serial number does not match the configured or discovered device.",
       "invalid_response": "P40 returned an invalid or unexpected API response.",

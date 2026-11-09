@@ -5,7 +5,14 @@ import aiohttp
 import pytest
 from aioresponses import aioresponses
 
-from custom_components.keba_p40.api import ApiError, CannotConnect, InvalidAuth, P40Api, WrongDevice
+from custom_components.keba_p40.api import (
+    AccessDenied,
+    ApiError,
+    CannotConnect,
+    InvalidAuth,
+    P40Api,
+    WrongDevice,
+)
 
 BASE = "https://p40.local:8443"
 
@@ -189,3 +196,26 @@ async def test_sessions_filter_and_identity_types(client, payloads):
         mock.get(BASE + "/v2/wallboxes/12345678", payload=[])
         with pytest.raises(ApiError, match="wallbox"):
             await client.wallbox("12345678")
+
+
+async def test_login_ok_but_read_forbidden_is_access_denied(client, caplog):
+    import logging
+
+    caplog.set_level(logging.DEBUG)
+    with aioresponses() as mock:
+        mock.post(BASE + "/v2/jwt/login", payload={"accessToken": "secret-jwt"})
+        mock.get(BASE + "/version", status=403)
+        mock.post(BASE + "/v2/jwt/login", payload={"accessToken": "secret-jwt"})
+        mock.get(BASE + "/version", status=403)
+        with pytest.raises(AccessDenied):
+            await client.get("/version")
+    assert "/version -> status=403" in caplog.text
+    assert "secret-jwt" not in caplog.text and "example-password" not in caplog.text
+
+
+async def test_rejected_login_is_not_access_denied(client):
+    with aioresponses() as mock:
+        mock.post(BASE + "/v2/jwt/login", status=401)
+        with pytest.raises(InvalidAuth) as err:
+            await client.get("/version")
+    assert not isinstance(err.value, AccessDenied)
