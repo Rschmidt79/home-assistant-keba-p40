@@ -1,6 +1,7 @@
 # 0.2.7
 
 - The username field defaults to `admin`, the REST username of the reference P40.
+- README: Marketplace (HA 2026.11) instead of only HACS; Core PR #173179 was closed.
 - README: state that the reference P40 logs in with the username `admin`.
 - Config flow keeps host, port, username and fingerprint after an error (the
   password is never echoed) and trims whitespace around the username.

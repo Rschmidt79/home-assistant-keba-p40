@@ -52,14 +52,14 @@ TLS. Tests use synthetic credentials and never contact a physical charger.
 
 1. Make a Home Assistant backup. Update while charging and the charging session are
    both off, with no imminent scheduled charging window.
-2. Download 0.2.7 in HACS, retaining the existing KEBA integration/config entry.
+2. Download 0.2.7 in the Marketplace (HACS before Home Assistant 2026.11), retaining the existing KEBA integration/config entry.
 3. Fully restart Home Assistant; an integration reload alone is insufficient for
    reliably replacing Python modules already imported by other integrations.
 4. Check that the current limit is numeric, existing entity IDs and enabled controls
    are retained, and any separate charging controller has no fault. Do not issue a
    START merely to verify installation.
 
-HACS replaces `custom_components/keba_p40`. This release includes the stability
+The Marketplace/HACS replaces `custom_components/keba_p40`. This release includes the stability
 patches used by the reference installation, so updating that patched 0.2.4 install
 retains those fixes. Local EV Smart Charging code, helpers, scripts, templates and
 dashboards are separate; this package neither installs nor updates them. No climate
@@ -98,11 +98,12 @@ monitoring connection alone does not verify that policy.
 
 ## Relationship to Home Assistant Core
 
-[Core PR #173179](https://github.com/home-assistant/core/pull/173179) proposes a
-built-in P40 integration. This repository is a separate implementation with its
-own physical audit and tests; it is not a testing distribution of that PR.
-Both use the domain `keba_p40`. Do not install both implementations together.
-A future transition will require checking config-entry and entity compatibility.
+[Core PR #173179](https://github.com/home-assistant/core/pull/173179) proposed a
+built-in P40 integration but was closed without being merged. This repository is a
+separate implementation with its own physical audit and tests; it is not a testing
+distribution of that PR. If a built-in P40 integration is added later, it may use
+the same domain `keba_p40`; do not install both implementations together, and check
+config-entry and entity compatibility first.
 
 ## Install from ZIP
 
@@ -128,19 +129,22 @@ A future transition will require checking config-entry and entity compatibility.
 Both HA and the charger must be able to reach each other on the local network.
 Port 502 is irrelevant to this integration. `p40.local` requires working mDNS.
 
-## HACS
+## Marketplace / HACS
 
-Open HACS, search for **KEBA KeContact P40**, download it, then restart Home
+From Home Assistant 2026.11, HACS is built into Home Assistant as the Marketplace
+(Settings → Marketplace) and takes over an existing HACS installation. Before
+2026.11 use HACS. Search for **KEBA KeContact P40**, download it, then restart Home
 Assistant. The existing config entry and current entities are reused.
 Do not delete the integration or create a duplicate entry.
 
 Fallback if the search finds nothing: add
-`https://github.com/Rschmidt79/home-assistant-keba-p40` in HACS →
-Custom repositories → **Integration**, then download the latest release.
+`https://github.com/Rschmidt79/home-assistant-keba-p40` as a custom repository
+(type **Integration**) in the Marketplace/HACS, then download the latest release.
+The integration is tested on Home Assistant 2026.9; 2026.11 is not yet verified.
 
 Remove the old Ich-h4lt repository from HACS management first so it cannot
 overwrite this integration. Keep the HA config entry/device. Back up your HA
-configuration before switching repositories. Future releases appear as HACS
+configuration before switching repositories. Future releases appear as Marketplace/HACS
 updates.
 
 
@@ -266,7 +270,7 @@ and protected by registry/setup tests and ruff F821 checks.
 ## Publishing updates
 
 Change the manifest version, run tests/ruff/hassfest, commit and push to main,
-then create a matching GitHub release such as v0.2.6. HACS downloads the release
+then create a matching GitHub release such as v0.2.7. The Marketplace/HACS downloads the release
 source tree. A tag alone is not a release. Active GitHub Actions in `.github/workflows/checks.yaml` run pytest, ruff,
 hassfest and HACS validation. Tests block network sockets and no CI job contacts
 a real charger.
